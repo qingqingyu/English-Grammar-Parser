@@ -1,0 +1,48 @@
+{
+  "manifest_version": 3,
+  "name": "English Grammar Parser",
+  "version": "2.0.0",
+  "description": "AI-powered English grammar analysis with real-time streaming results",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "contextMenus",
+    "sidePanel",
+    "commands"
+  ],
+  "host_permissions": [
+    "https://*.vercel.app/*",
+    "https://*.netlify.app/*",
+    "https://api.openai.com/*"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["src/content.js"],
+      "css": ["src/content.css"]
+    }
+  ],
+  "background": {
+    "service_worker": "src/background.js"
+  },
+  "side_panel": {
+    "default_path": "src/sidepanel.html"
+  },
+  "action": {
+    "default_title": "Open Grammar Parser"
+  },
+  "commands": {
+    "analyze-grammar": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+G",
+        "mac": "Command+Shift+G"
+      },
+      "description": "Analyze selected text grammar"
+    }
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}

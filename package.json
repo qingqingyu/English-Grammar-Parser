@@ -1,0 +1,29 @@
+{
+  "name": "english-grammar-parser",
+  "version": "2.0.0",
+  "description": "AI-powered English grammar analysis Chrome extension with serverless backend",
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "build": "echo 'No build step required'",
+    "deploy": "vercel --prod"
+  },
+  "dependencies": {
+    "node-fetch": "^3.3.2"
+  },
+  "devDependencies": {
+    "vercel": "^32.5.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "keywords": [
+    "chrome-extension",
+    "english-grammar",
+    "ai-analysis",
+    "vercel",
+    "serverless"
+  ],
+  "author": "Your Name",
+  "license": "MIT"
+}

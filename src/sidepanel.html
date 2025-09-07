@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>English Grammar Parser</title>
+    <link rel="stylesheet" href="sidepanel.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 头部区域 -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo">
+                    <span class="logo-icon">📖</span>
+                    <h1 class="logo-text">Grammar Parser</h1>
+                </div>
+                <div class="header-actions">
+                    <button id="historyBtn" class="icon-btn" title="历史记录">
+                        <span>📋</span>
+                    </button>
+                    <button id="settingsBtn" class="icon-btn" title="设置">
+                        <span>⚙️</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- 主要内容区域 -->
+        <main class="main-content">
+            <!-- 选中文本显示区域 -->
+            <section id="selectedTextSection" class="selected-text-section" style="display: none;">
+                <div class="section-header">
+                    <h3>选中文本</h3>
+                    <span id="wordCount" class="word-count">0 words</span>
+                </div>
+                <div id="selectedText" class="selected-text"></div>
+            </section>
+
+            <!-- 手动输入区域 -->
+            <section id="inputSection" class="input-section">
+                <div class="section-header">
+                    <h3>输入文本分析</h3>
+                </div>
+                <div class="input-container">
+                    <textarea 
+                        id="textInput" 
+                        class="text-input" 
+                        placeholder="在此输入英文文本进行语法分析，或在网页上选中文本..."
+                        rows="4"
+                    ></textarea>
+                    <div class="input-actions">
+                        <button id="analyzeBtn" class="primary-btn">
+                            <span class="btn-icon">🔍</span>
+                            <span class="btn-text">分析语法</span>
+                        </button>
+                        <button id="clearBtn" class="secondary-btn">
+                            <span>🗑️</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 分析结果区域 -->
+            <section id="resultSection" class="result-section">
+                <div class="section-header">
+                    <h3>分析结果</h3>
+                    <div class="result-actions">
+                        <button id="copyResultBtn" class="icon-btn" title="复制结果" style="display: none;">
+                            <span>📋</span>
+                        </button>
+                        <button id="saveResultBtn" class="icon-btn" title="保存到历史" style="display: none;">
+                            <span>💾</span>
+                        </button>
+                    </div>
+                </div>
+                <div id="resultContent" class="result-content">
+                    <div class="empty-state">
+                        <div class="empty-icon">🎯</div>
+                        <p>选择文本或输入内容开始分析</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 历史记录侧边栏 -->
+        <aside id="historySidebar" class="history-sidebar">
+            <div class="sidebar-header">
+                <h3>历史记录</h3>
+                <button id="closeHistoryBtn" class="icon-btn">
+                    <span>✕</span>
+                </button>
+            </div>
+            <div class="sidebar-content">
+                <div id="historyList" class="history-list">
+                    <!-- 历史记录项将动态生成 -->
+                </div>
+                <div class="sidebar-actions">
+                    <button id="clearHistoryBtn" class="danger-btn">
+                        <span>🗑️</span>
+                        <span>清空历史</span>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 设置侧边栏 -->
+        <aside id="settingsSidebar" class="settings-sidebar">
+            <div class="sidebar-header">
+                <h3>设置</h3>
+                <button id="closeSettingsBtn" class="icon-btn">
+                    <span>✕</span>
+                </button>
+            </div>
+            <div class="sidebar-content">
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label for="apiUrl">API 服务器地址</label>
+                        <input type="url" id="apiUrl" class="form-input" placeholder="https://your-app.vercel.app">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="minWords">最少单词数</label>
+                        <input type="number" id="minWords" class="form-input" min="1" max="50" value="5">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="maxWords">最多单词数</label>
+                        <input type="number" id="maxWords" class="form-input" min="50" max="1000" value="500">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="theme">界面主题</label>
+                        <select id="theme" class="form-select">
+                            <option value="light">浅色主题</option>
+                            <option value="dark">深色主题</option>
+                            <option value="auto">跟随系统</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="autoTrigger" checked>
+                            <span class="checkbox-custom"></span>
+                            <span>自动触发分析</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="sidebar-actions">
+                    <button id="saveSettingsBtn" class="primary-btn">
+                        <span>💾</span>
+                        <span>保存设置</span>
+                    </button>
+                    <button id="resetSettingsBtn" class="secondary-btn">
+                        <span>🔄</span>
+                        <span>重置</span>
+                    </button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- 加载遮罩 -->
+        <div id="loadingOverlay" class="loading-overlay" style="display: none;">
+            <div class="loading-content">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">正在分析中...</div>
+                <div class="loading-progress">
+                    <div class="progress-bar">
+                        <div id="progressFill" class="progress-fill"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="sidepanel.js"></script>
+</body>
+</html>
