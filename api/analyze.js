@@ -30,7 +30,7 @@ export default async function handler(req, res) {
     }
 
     // 验证文本长度
-    const wordCount = text.trim().split(/\\s+/).length;
+    const wordCount = text.trim().split(/\s+/).length;
     if (wordCount < 5 || wordCount > 500) {
       res.status(400).json({ 
         error: `文本长度不符合要求，需要5-500个单词，当前${wordCount}个单词` 
@@ -206,5 +206,4 @@ function generateMockAnalysis(text) {
 - **学习建议**：注意时态和语态的使用
 
 *注意：这是一个演示响应。实际分析需要配置 OpenAI API 密钥。*`;
-}`;
 }
