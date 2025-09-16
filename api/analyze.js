@@ -100,6 +100,20 @@ async function streamAnalysis(prompt, res) {
   }
 
   try {
+    // 记录API调用开始
+    console.log('🚀 开始调用第三方API...');
+    console.log('📡 API地址:', 'https://www.chataiapi.com');
+    console.log('🔑 API密钥是否存在:', !!apiKey);
+    console.log('📝 请求参数:', {
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt.substring(0, 100) + '...' }], // 只显示前100字符
+      stream: true,
+      temperature: 0.3,
+      max_tokens: 5000,
+    });
+
+    const startTime = Date.now();
+    
     const response = await fetch('https://www.chataiapi.com', {
       method: 'POST',
       headers: {
@@ -117,10 +131,31 @@ async function streamAnalysis(prompt, res) {
       }),
     });
 
+    const responseTime = Date.now() - startTime;
+    
+    // 记录响应信息
+    console.log('⏱️  响应时间:', responseTime + 'ms');
+    console.log('📊 响应状态码:', response.status);
+    console.log('📋 响应状态文本:', response.statusText);
+    console.log('🌐 响应头信息:', Object.fromEntries(response.headers.entries()));
+
     if (!response.ok) {
-      throw new Error(`OpenAI API error: ${response.status}`);
+      console.error('❌ API请求失败!');
+      console.error('📄 错误状态:', response.status, response.statusText);
+      
+      // 尝试读取错误响应体
+      try {
+        const errorText = await response.text();
+        console.error('📝 错误详情:', errorText);
+      } catch (e) {
+        console.error('💥 无法读取错误响应:', e.message);
+      }
+      
+      throw new Error(`第三方API error: ${response.status} - ${response.statusText}`);
     }
 
+    console.log('✅ API请求成功，开始处理流式响应...');
+    
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
 
@@ -128,13 +163,17 @@ async function streamAnalysis(prompt, res) {
       const { done, value } = await reader.read();
       
       if (done) {
-        res.write(`data: ${JSON.stringify({ done: true })}\\n\\n`);
+        console.log('🏁 流式响应结束');
+        res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
         res.end();
         break;
       }
 
       const chunk = decoder.decode(value);
-      const lines = chunk.split('\\n');
+      console.log('📦 收到数据块长度:', chunk.length);
+      // console.log('📦 数据块内容:', chunk); // 如果需要看具体内容可以取消注释
+      
+      const lines = chunk.split('\n');
 
       for (const line of lines) {
         if (line.startsWith('data: ') && line !== 'data: [DONE]') {
@@ -143,16 +182,31 @@ async function streamAnalysis(prompt, res) {
             const content = data.choices[0]?.delta?.content;
             
             if (content) {
-              res.write(`data: ${JSON.stringify({ content, done: false })}\\n\\n`);
+              res.write(`data: ${JSON.stringify({ content, done: false })}\n\n`);
             }
           } catch (parseError) {
-            // 忽略解析错误
+            console.warn('⚠️  解析数据块失败:', parseError.message);
+            console.warn('🔍 问题数据:', line);
           }
         }
       }
     }
   } catch (error) {
-    console.error('OpenAI streaming error:', error);
+    console.error('💥 API调用出现异常:');
+    console.error('🔍 错误类型:', error.constructor.name);
+    console.error('📝 错误消息:', error.message);
+    console.error('📚 错误堆栈:', error.stack);
+    
+    // 检查网络连接问题
+    if (error.code === 'ENOTFOUND') {
+      console.error('🌐 DNS解析失败，API地址可能不存在');
+    } else if (error.code === 'ECONNREFUSED') {
+      console.error('🔒 连接被拒绝，API服务可能不可用');
+    } else if (error.code === 'ETIMEDOUT') {
+      console.error('⏰ 请求超时');
+    }
+    
+    console.log('🔄 切换到模拟响应模式...');
     await simulateAnalysis(prompt, res);
   }
 }

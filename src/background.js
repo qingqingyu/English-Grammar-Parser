@@ -141,7 +141,7 @@ async function analyzeText(text, tabId, openSidePanel = false) {
 // EventSource 流式分析
 async function analyzeWithEventSource(text) {
   const settings = await getSettings();
-  const apiUrl = settings.apiUrl || 'https://english-grammar-parser-8axd5r8h7-alices-projects-4e45fc0f.vercel.app';
+  const apiUrl = settings.apiUrl || 'https://english-grammar-parser.vercel.app';
   
   return new Promise((resolve, reject) => {
     const eventSource = new EventSource(`${apiUrl}/api/analyze?text=${encodeURIComponent(text)}`);
