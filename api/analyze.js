@@ -117,7 +117,7 @@ async function streamAnalysis(prompt, res) {
 
     const startTime = Date.now();
     
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    const response = await fetch('https://www.chataiapi.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
