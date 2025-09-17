@@ -40,11 +40,14 @@ export default async function handler(req, res) {
 
     // 设置 Server-Sent Events 头
     res.writeHead(200, {
-      'Content-Type': 'text/plain; charset=utf-8',
-      'Cache-Control': 'no-cache',
+      'Content-Type': 'text/event-stream; charset=utf-8',
+      'Cache-Control': 'no-cache, no-transform',
       'Connection': 'keep-alive',
       'Access-Control-Allow-Origin': '*',
+      'X-Accel-Buffering': 'no',
     });
+    const heartbeat = setInterval(() => { try { res.write(': ping\n\n'); } catch {} }, 15000);
+    // 在结束前 clearInterval(heartbeat)
 
     // 构建 AI Prompt
     const prompt = buildGrammarAnalysisPrompt(text);
@@ -114,14 +117,14 @@ async function streamAnalysis(prompt, res) {
 
     const startTime = Date.now();
     
-    const response = await fetch('https://www.chataiapi.com', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: 'gemini-1.5-flash',
         messages: [
           { role: 'user', content: prompt }
         ],
@@ -156,6 +159,13 @@ async function streamAnalysis(prompt, res) {
 
     console.log('✅ API请求成功，开始处理流式响应...');
     
+    const ct = response.headers.get('content-type') || '';
+    if (!ct.includes('text/event-stream')) {
+      const body = await response.text(); // 打印前200字符即可
+      console.error('Unexpected upstream content-type:', ct, 'body(head):', body.slice(0,200));
+      throw new Error('上游未返回SSE，无法流式解析');
+    }
+
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
 
@@ -176,18 +186,21 @@ async function streamAnalysis(prompt, res) {
       const lines = chunk.split('\n');
 
       for (const line of lines) {
-        if (line.startsWith('data: ') && line !== 'data: [DONE]') {
+        if (line === 'data: [DONE]') {
+          res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+          res.end();
+          return;
+        }
+        if (line.startsWith('data: ')) {
           try {
             const data = JSON.parse(line.slice(6));
-            const content = data.choices[0]?.delta?.content;
-            
-            if (content) {
-              res.write(`data: ${JSON.stringify({ content, done: false })}\n\n`);
-            }
-          } catch (parseError) {
-            console.warn('⚠️  解析数据块失败:', parseError.message);
-            console.warn('🔍 问题数据:', line);
+            const content = data.choices?.[0]?.delta?.content;
+            if (content) res.write(`data: ${JSON.stringify({ content, done: false })}\n\n`);
+          } catch (e) {
+            console.warn('Upstream JSON parse failed, line(head):', line.slice(0,200));
           }
+        } else if (line.trim()) {
+          console.log('Upstream non-data line(head):', line.slice(0,200));
         }
       }
     }
