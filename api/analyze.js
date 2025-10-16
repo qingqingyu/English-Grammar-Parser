@@ -127,7 +127,7 @@ async function streamAnalysis(prompt, res) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gemini',
+        model: 'gemini-1.5-pro',
         messages: [
           { role: 'user', content: prompt }
         ],
