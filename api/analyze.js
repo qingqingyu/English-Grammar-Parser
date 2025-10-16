@@ -111,7 +111,7 @@ async function streamAnalysis(prompt, res) {
     console.log('📡 API地址:', 'https://www.chataiapi.com');
     console.log('🔑 API密钥是否存在:', !!apiKey);
     console.log('📝 请求参数:', {
-      model: 'gpt-4o-mini',
+      model: 'gemini-1.5-pro',
       messages: [{ role: 'user', content: prompt.substring(0, 100) + '...' }], // 只显示前100字符
       stream: true,
       temperature: 0.3,
@@ -127,7 +127,7 @@ async function streamAnalysis(prompt, res) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'gemini-1.5-flash',
+        model: 'gemini',
         messages: [
           { role: 'user', content: prompt }
         ],
