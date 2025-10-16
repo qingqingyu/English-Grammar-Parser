@@ -46,14 +46,17 @@ export default async function handler(req, res) {
       'Access-Control-Allow-Origin': '*',
       'X-Accel-Buffering': 'no',
     });
-    const heartbeat = setInterval(() => { try { res.write(': ping\n\n'); } catch {} }, 15000);
-    // 在结束前 clearInterval(heartbeat)
+    const heartbeat = setInterval(() => { try { res.write(': ping\n\n'); } catch (e) {} }, 15000);
 
-    // 构建 AI Prompt
-    const prompt = buildGrammarAnalysisPrompt(text);
+    try {
+      // 构建 AI Prompt
+      const prompt = buildGrammarAnalysisPrompt(text);
 
-    // 调用 OpenAI API 进行流式分析
-    await streamAnalysis(prompt, res);
+      // 调用 OpenAI API 进行流式分析
+      await streamAnalysis(prompt, res);
+    } finally {
+      clearInterval(heartbeat);
+    }
 
   } catch (error) {
     console.error('Analysis error:', error);
@@ -64,7 +67,7 @@ export default async function handler(req, res) {
         details: error.message 
       });
     } else {
-      res.write(`data: ${JSON.stringify({ error: error.message, done: true })}\\n\\n`);
+      res.write(`data: ${JSON.stringify({ error: error.message, done: true })}\n\n`);
       res.end();
     }
   }
@@ -232,19 +235,19 @@ async function simulateAnalysis(prompt, res) {
   // 模拟打字机效果
   for (let i = 0; i < mockAnalysis.length; i++) {
     const char = mockAnalysis[i];
-    res.write(`data: ${JSON.stringify({ content: char, done: false })}\\n\\n`);
+    res.write(`data: ${JSON.stringify({ content: char, done: false })}\n\n`);
     
     // 模拟延迟
     await new Promise(resolve => setTimeout(resolve, 30));
   }
   
-  res.write(`data: ${JSON.stringify({ done: true })}\\n\\n`);
+  res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
   res.end();
 }
 
 // 从 prompt 中提取文本
 function extractTextFromPrompt(prompt) {
-  const match = prompt.match(/要分析的英文文本：\\n(.+)$/s);
+  const match = prompt.match(/要分析的英文文本：\n(.+)$/s);
   return match ? match[1].trim() : 'Sample text';
 }
 
