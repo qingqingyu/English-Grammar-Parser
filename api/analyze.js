@@ -120,6 +120,9 @@ async function streamAnalysis(prompt, res) {
 
     const startTime = Date.now();
     
+    console.log('🔑 API Key长度:', apiKey ? apiKey.length : 0);
+    console.log('🔑 API Key前缀:', apiKey ? apiKey.substring(0, 8) + '****' : '未配置');
+    
     const response = await fetch('https://www.chataiapi.com/v1/chat/completions', {
       method: 'POST',
       headers: {
