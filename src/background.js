@@ -145,7 +145,9 @@ async function analyzeWithEventSource(text) {
   
   return new Promise((resolve, reject) => {
     const eventSource = new EventSource(`${apiUrl}/api/analyze?text=${encodeURIComponent(text)}`);
-    
+    console.log('🔗 创建 EventSource 连接:', `${apiUrl}/api/analyze?text=${encodeURIComponent(text)}`);
+    console.log('📡 EventSource 对象:', eventSource);
+    console.log('🔄 EventSource 状态:', eventSource.readyState);
     eventSource.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
@@ -205,7 +207,7 @@ async function initializeDefaults() {
     minWords: 5,
     maxWords: 500,
     shortcutKey: "Ctrl+Shift+G",
-    apiUrl: "https://english-grammar-parser-8axd5r8h7-alices-projects-4e45fc0f.vercel.app"
+    apiUrl: "https://english-grammar-parser.vercel.app"
   };
   
   const result = await chrome.storage.sync.get(['settings']);
